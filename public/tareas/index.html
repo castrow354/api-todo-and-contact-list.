@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Lista de Tareas</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; padding-top: 40px; }
+        .contenedor { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        .volver { text-decoration: none; color: #007bff; font-size: 14px; font-weight: bold; }
+        h1 { text-align: center; color: #333; margin: 15px 0 20px; }
+        .formulario { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        input { padding: 10px; border: 1px solid #ccc; border-radius: 10px; font-size: 14px; }
+        input[type="text"] { flex: 2; }
+        button { padding: 10px 14px; background: #28a745; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        .tarea-item { background: #f8f9fa; padding: 12px; margin-bottom: 10px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e9ecef; }
+        .completada { text-decoration: line-through; color: gray; }
+        .acciones { display: flex; gap: 6px; }
+        .btn-edit { background: #ffc107; color: black; padding: 6px 10px; font-size: 12px; }
+        .btn-del { background: #dc3545; padding: 6px 10px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="contenedor">
+        <a href="/index.html" class="volver">⬅ Volver al Menú</a>
+        <h1>Mi Lista de Tareas</h1>
+        <div class="formulario">
+            <input type="text" id="todo-title" placeholder="Escribe una tarea...">
+            <input type="date" id="date-picker">
+            <button id="btn-agregar" type="button">Añadir</button>
+        </div>
+        <div id="todo-list"></div>
+    </div>
+
+    <script>
+        const API_URL = '/tareas';
+        const textbox = document.getElementById('todo-title');
+        const datePicker = document.getElementById('date-picker');
+        const btnAgregar = document.getElementById('btn-agregar');
+        const todoList = document.getElementById('todo-list');
+        let editId = null;
+
+        cargarTareas();
+
+        async function cargarTareas() {
+            const res = await fetch(API_URL);
+            const tareas = await res.json();
+            todoList.innerHTML = '';
+
+            tareas.forEach(tarea => {
+                const div = document.createElement('div');
+                div.className = 'tarea-item';
+
+                const span = document.createElement('span');
+                span.textContent = `${tarea.title} ${tarea.dueDate ? '- ' + tarea.dueDate : ''}`;
+                if (tarea.completada) span.classList.add('completada');
+                span.style.cursor = 'pointer';
+                span.onclick = () => toggleCompletada(tarea);
+
+                const acciones = document.createElement('div');
+                acciones.className = 'acciones';
+
+                const btnEdit = document.createElement('button');
+                btnEdit.textContent = 'Editar';
+                btnEdit.className = 'btn-edit';
+                btnEdit.onclick = () => {
+                    textbox.value = tarea.title;
+                    datePicker.value = tarea.dueDate;
+                    editId = tarea.id;
+                    btnAgregar.textContent = 'Actualizar';
+                };
+
+                const btnDel = document.createElement('button');
+                btnDel.textContent = 'Eliminar';
+                btnDel.className = 'btn-del';
+                btnDel.onclick = () => eliminarTarea(tarea.id);
+
+                acciones.append(btnEdit, btnDel);
+                div.append(span, acciones);
+                todoList.appendChild(div);
+            });
+        }
+
+        btnAgregar.onclick = async () => {
+            const title = textbox.value.trim();
+            const dueDate = datePicker.value;
+            if (!title) return alert('Escribe una tarea');
+
+            if (editId) {
+                await fetch(`${API_URL}/${editId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, dueDate })
+                });
+                editId = null;
+                btnAgregar.textContent = 'Añadir';
+            } else {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, dueDate })
+                });
+            }
+            textbox.value = '';
+            datePicker.value = '';
+            cargarTareas();
+        };
+
+        async function toggleCompletada(tarea) {
+            await fetch(`${API_URL}/${tarea.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ completada: !tarea.completada })
+            });
+            cargarTareas();
+        }
+
+        async function eliminarTarea(id) {
+            await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+            cargarTareas();
+        }
+    </script>
+</body>
+</html>

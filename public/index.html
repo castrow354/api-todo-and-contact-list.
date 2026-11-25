@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Tareas y Contactos (API REST)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e293b;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        h1 { margin-bottom: 30px; text-align: center; }
+        .menu { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+        a {
+            text-decoration: none;
+            padding: 18px 32px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            transition: transform 0.2s;
+        }
+        a:hover { transform: scale(1.05); }
+        .btn-tareas { background-color: #28a745; }
+        .btn-contactos { background-color: #e2b842; color: #222; }
+    </style>
+</head>
+<body>
+    <h1>Gestión de Tareas y Contactos (API REST)</h1>
+    <div class="menu">
+        <a href="/tareas/index.html" class="btn-tareas">📋 Lista de Tareas</a>
+        <a href="/contactos/index.html" class="btn-contactos">👥 Lista de Contactos</a>
+    </div>
+</body>
+</html>

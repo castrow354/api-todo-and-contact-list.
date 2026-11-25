@@ -1,0 +1,13 @@
+body { font-family: Arial, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; padding-top: 40px; }
+.contenedor { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+.volver { text-decoration: none; color: #007bff; font-size: 14px; font-weight: bold; }
+h1 { text-align: center; color: #333; margin: 15px 0 20px; }
+.formulario { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+input { padding: 10px; border: 1px solid #ccc; border-radius: 10px; font-size: 14px; }
+input[type="text"] { flex: 2; }
+button { padding: 10px 14px; background: #28a745; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+.tarea-item { background: #f8f9fa; padding: 12px; margin-bottom: 10px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e9ecef; }
+.completada { text-decoration: line-through; color: gray; }
+.acciones { display: flex; gap: 6px; }
+.btn-edit { background: #ffc107; color: black; padding: 6px 10px; font-size: 12px; }
+.btn-del { background: #dc3545; padding: 6px 10px; font-size: 12px; }

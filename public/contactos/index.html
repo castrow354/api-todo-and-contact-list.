@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact List</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background-color: #e2b842; display: flex; justify-content: center; padding: 30px 20px; }
+        .container { width: 100%; max-width: 520px; text-align: center; }
+        .volver { display: inline-block; margin-bottom: 10px; color: white; text-decoration: none; font-weight: bold; }
+        h1 { color: white; font-size: 32px; margin-bottom: 20px; }
+        form { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+        input[type="text"], input[type="tel"] { width: 100%; padding: 12px 16px; border: none; border-radius: 10px; font-size: 14px; outline: none; }
+        .gender-group { display: flex; gap: 25px; margin: 8px 0; color: white; font-size: 15px; }
+        .gender-group label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        button[type="submit"] { background-color: #4692d9; color: white; border: none; border-radius: 8px; padding: 10px 32px; font-weight: bold; cursor: pointer; margin-bottom: 25px; }
+        .contact-list { display: flex; flex-direction: column; gap: 12px; }
+        .contact-card { background: white; border-radius: 12px; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; text-align: left; }
+        .contact-actions { display: flex; gap: 14px; }
+        .action-btn { background: none; border: none; cursor: pointer; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/index.html" class="volver">⬅ Volver al Menú</a>
+        <h1>Contact List</h1>
+        <form id="contact-form">
+            <input type="text" id="first-name" placeholder="Input your name" required>
+            <input type="text" id="last-name" placeholder="Input your last name" required>
+            <input type="tel" id="phone" placeholder="Input your phone number" required>
+            <input type="text" id="city" placeholder="Input your city" required>
+            <input type="text" id="address" placeholder="Input your address" required>
+            <div class="gender-group">
+                <label><input type="radio" name="gender" value="Female"> Female</label>
+                <label><input type="radio" name="gender" value="Male" checked> Male</label>
+            </div>
+            <button type="submit" id="btn-submit">ADD</button>
+        </form>
+        <div id="contact-list" class="contact-list"></div>
+    </div>
+
+    <script>
+        const API_URL = '/contactos';
+        let editId = null;
+
+        const form = document.getElementById('contact-form');
+        const firstNameInput = document.getElementById('first-name');
+        const lastNameInput = document.getElementById('last-name');
+        const phoneInput = document.getElementById('phone');
+        const cityInput = document.getElementById('city');
+        const addressInput = document.getElementById('address');
+        const btnSubmit = document.getElementById('btn-submit');
+        const contactList = document.getElementById('contact-list');
+
+        renderContacts();
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const gender = document.querySelector('input[name="gender"]:checked').value;
+            const data = {
+                firstName: firstNameInput.value.trim(),
+                lastName: lastNameInput.value.trim(),
+                phone: phoneInput.value.trim(),
+                city: cityInput.value.trim(),
+                address: addressInput.value.trim(),
+                gender
+            };
+
+            if (editId) {
+                await fetch(`${API_URL}/${editId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                editId = null;
+                btnSubmit.textContent = 'ADD';
+            } else {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+            }
+
+            form.reset();
+            document.querySelector('input[name="gender"][value="Male"]').checked = true;
+            renderContacts();
+        });
+
+        async function renderContacts() {
+            const res = await fetch(API_URL);
+            const contacts = await res.json();
+            contactList.innerHTML = '';
+
+            contacts.forEach(contact => {
+                const card = document.createElement('div');
+                card.className = 'contact-card';
+                const avatar = contact.gender === 'Female' ? '👩' : '👨';
+
+                const info = document.createElement('div');
+                info.textContent = `${avatar} ${contact.firstName} ${contact.lastName} - ${contact.city}`;
+
+                const actions = document.createElement('div');
+                actions.className = 'contact-actions';
+
+                const delBtn = document.createElement('button');
+                delBtn.className = 'action-btn';
+                delBtn.textContent = '🗑️';
+                delBtn.onclick = async () => {
+                    await fetch(`${API_URL}/${contact.id}`, { method: 'DELETE' });
+                    renderContacts();
+                };
+
+                const editBtn = document.createElement('button');
+                editBtn.className = 'action-btn';
+                editBtn.textContent = '✏️';
+                editBtn.onclick = () => {
+                    firstNameInput.value = contact.firstName;
+                    lastNameInput.value = contact.lastName;
+                    phoneInput.value = contact.phone;
+                    cityInput.value = contact.city;
+                    addressInput.value = contact.address;
+                    document.querySelector(`input[name="gender"][value="${contact.gender}"]`).checked = true;
+                    editId = contact.id;
+                    btnSubmit.textContent = 'UPDATE';
+                };
+
+                actions.append(delBtn, editBtn);
+                card.append(info, actions);
+                contactList.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
